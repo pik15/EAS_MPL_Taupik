@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../core/network/native_service.dart';
 import '../../data/models/crypto_api_model.dart';
 
@@ -32,15 +33,57 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
+  // UPDATE: Mengirim NIM lengkap "20123005" dan memicu dialog selebrasi Lottie Network
   Future<void> _triggerNativeMethodChannel() async {
-    // Mengirim NIM akhiran "05" ke Kotlin untuk dibalikkan dan memicu Native Toast
-    final result = await _nativeService.reverseMyNIM("05");
+    // Mengirim NIM lengkap kamu ke Kotlin agar dibalikkan menjadi 50032102
+    final result = await _nativeService.reverseMyNIM("20123005");
     
     if (mounted) {
+      // Tampilkan SnackBar feedback dari Kotlin
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.blueGrey,
           content: Text('Dart Terima dari Kotlin: $result'),
+        ),
+      );
+
+      // Tampilkan dialog pop-up yang memuat animasi Lottie dari tautan URL baru kamu
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: const Color(0xFF1B263B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Menggunakan tautan Lottie Network eksternal agar aman dari error asset
+              Lottie.network(
+                'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
+                width: 180,
+                height: 180,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.check_circle, size: 80, color: Colors.greenAccent);
+                },
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Verification Success!',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Owner NIM: $result Verified',
+                style: const TextStyle(color: Colors.greenAccent, fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Awesome', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       );
     }
@@ -123,7 +166,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
             const SizedBox(height: 20),
 
-            // MOCK LIVE CHART BLOCK (Sesuai visual grafik bergelombang di Stitch kamu)
+            // MOCK LIVE CHART BLOCK
             Container(
               height: 180,
               width: double.infinity,

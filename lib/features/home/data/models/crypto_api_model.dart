@@ -13,14 +13,17 @@ class CryptoApiModel {
     required this.changePercent24h,
   });
 
-  // Factory untuk mengubah JSON dari API CoinCap menjadi objek Dart
+  // UPDATE: Factory khusus untuk mengubah JSON dari CoinGecko v3 menjadi objek Dart
   factory CryptoApiModel.fromJson(Map<String, dynamic> json) {
     return CryptoApiModel(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
-      symbol: json['symbol'] ?? '',
-      priceUsd: double.tryParse(json['priceUsd']?.toString() ?? '0') ?? 0.0,
-      changePercent24h: double.tryParse(json['changePercent24Hr']?.toString() ?? '0') ?? 0.0,
+      // CoinGecko mengembalikan symbol dalam huruf kecil (lowercase), kita paksa ke uppercase agar rapi di UI
+      symbol: (json['symbol'] ?? '').toString().toUpperCase(),
+      
+      // CoinGecko menggunakan num/double langsung untuk current_price & price_change_percentage_24h
+      priceUsd: double.tryParse(json['current_price']?.toString() ?? '0') ?? 0.0,
+      changePercent24h: double.tryParse(json['price_change_percentage_24h']?.toString() ?? '0') ?? 0.0,
     );
   }
 }

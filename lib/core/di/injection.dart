@@ -11,8 +11,8 @@ void setupLocator() {
   locator.registerLazySingleton<Dio>(() {
     final dio = Dio(BaseOptions(
       baseUrl: EnvConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
     ));
     dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
     return dio;
