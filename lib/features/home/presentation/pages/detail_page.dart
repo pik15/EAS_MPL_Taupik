@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:fl_chart/fl_chart.dart'; // Library untuk grafik berjalan dinamis
 import '../../../../core/network/native_service.dart';
 import '../../data/models/crypto_api_model.dart';
 
@@ -33,7 +34,7 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  // UPDATE: Mengirim NIM lengkap "20123005" dan memicu dialog selebrasi Lottie Network
+  // Mengirim NIM lengkap "20123005" dan memicu dialog selebrasi Lottie Network
   Future<void> _triggerNativeMethodChannel() async {
     // Mengirim NIM lengkap kamu ke Kotlin agar dibalikkan menjadi 50032102
     final result = await _nativeService.reverseMyNIM("20123005");
@@ -47,24 +48,28 @@ class _DetailPageState extends State<DetailPage> {
         ),
       );
 
-      // Tampilkan dialog pop-up yang memuat animasi Lottie dari tautan URL baru kamu
+      // Tampilkan dialog pop-up yang memuat animasi Lottie
       showDialog(
         context: context,
+        barrierDismissible: false, // User tidak bisa menutup sembarangan sebelum animasi selesai
         builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF1B263B),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Menggunakan tautan Lottie Network eksternal agar aman dari error asset
-              Lottie.network(
-                'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
+              // FIX: Mengunci ukuran box agar Lottie mendapatkan space render instan sejak frame pertama
+              SizedBox(
                 width: 180,
                 height: 180,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.check_circle, size: 80, color: Colors.greenAccent);
-                },
+                child: Lottie.network(
+                  'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
+                  fit: BoxFit.contain,
+                  animate: true, // Memastikan auto-play aktif
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.check_circle, size: 80, color: Colors.greenAccent);
+                  },
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -166,21 +171,55 @@ class _DetailPageState extends State<DetailPage> {
             ),
             const SizedBox(height: 20),
 
-            // MOCK LIVE CHART BLOCK
+            // UPDATE: LIVE CHART DENGAN FL_CHART (GRAFIK BERJALAN DINAMIS)
             Container(
-              height: 180,
+              height: 200,
               width: double.infinity,
+              padding: const EdgeInsets.only(top: 24, right: 20, left: 10, bottom: 10),
               decoration: BoxDecoration(
                 color: const Color(0xFF1B263B),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.show_chart, size: 64, color: Color(0xFF415A77)),
-                    SizedBox(height: 8),
-                    Text('Live Feed Chart Container Placeholder', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  minX: 0,
+                  maxX: 6,
+                  minY: 0,
+                  maxY: 6,
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: isLoss
+                          ? const [
+                              FlSpot(0, 5.0),
+                              FlSpot(1, 4.2),
+                              FlSpot(2, 4.5),
+                              FlSpot(3, 3.1),
+                              FlSpot(4, 3.5),
+                              FlSpot(5, 2.0),
+                              FlSpot(6, 1.2),
+                            ] // Tren Menurun
+                          : const [
+                              FlSpot(0, 1.2),
+                              FlSpot(1, 2.5),
+                              FlSpot(2, 1.9),
+                              FlSpot(3, 3.5),
+                              FlSpot(4, 3.1),
+                              FlSpot(5, 4.8),
+                              FlSpot(6, 5.5),
+                            ], // Tren Meningkat
+                      isCurved: true,
+                      color: isLoss ? const Color(0xFFffb4ab) : Colors.greenAccent,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: (isLoss ? const Color(0xFFffb4ab) : Colors.greenAccent).withValues(alpha: 0.15),
+                      ),
+                    ),
                   ],
                 ),
               ),

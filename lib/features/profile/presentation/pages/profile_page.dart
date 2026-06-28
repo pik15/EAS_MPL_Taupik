@@ -37,8 +37,8 @@ class _ProfilePageState extends State<ProfilePage> {
         _showEasterEgg = true;
       });
 
-      // Sembunyikan animasi Lottie setelah 3 detik secara otomatis
-      Timer(const Duration(seconds: 3), () {
+      // Sembunyikan animasi Lottie setelah 4 detik secara otomatis
+      Timer(const Duration(seconds: 4), () {
         if (mounted) {
           setState(() {
             _showEasterEgg = false;
@@ -165,7 +165,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildInfoCard(
                   title: 'ACADEMIC STATUS',
                   value: 'Active',
-                  subtitle: 'Semester 2025/2026', // Sesuai tahun akademik saat ini
+                  subtitle: 'Semester 2025/2026',
                   valueColor: Colors.white,
                 ),
                 const SizedBox(height: 16),
@@ -209,26 +209,38 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // 5. OVERLAY EASTER EGG LOTTIE RAHASIA (Memenuhi Layar Selama 3 Detik)
+          // 5. OVERLAY EASTER EGG LOTTIE RAHASIA
           if (_showEasterEgg)
             Container(
-              color: Colors.black.withValues(alpha: 0.9),
+              color: Colors.black.withValues(alpha: 0.95),
               width: double.infinity,
               height: double.infinity,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Lottie.asset(
-                      'assets/lottie/crypto_success.json',
-                      width: 260,
-                      height: 260,
-                      fit: BoxFit.contain,
+                    SizedBox(
+                      width: 280,
+                      height: 280,
+                      child: Lottie.network(
+                        'https://assets9.lottiefiles.com/packages/lf20_touohxv0.json',
+                        fit: BoxFit.contain,
+                        animate: true,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.star, size: 100, color: Colors.greenAccent);
+                        },
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     const Text(
-                      '🚀 NIM 05 VERIFIED - BULLISH MARKET! 🚀',
-                      style: TextStyle(color: Colors.greenAccent, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                      '🚀 NIM 20123005 VERIFIED - BULLISH MARKET! 🚀',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.greenAccent, 
+                        fontSize: 18, 
+                        fontWeight: FontWeight.bold, 
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ],
                 ),
@@ -236,7 +248,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
         ],
       ),
-      // BOTTOM NAVIGATION BAR (Sama seperti Home Page agar navigasi terikat)
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1E201E),
@@ -246,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: const Color(0xFF1E201E),
           selectedItemColor: const Color(0xFFBAC8DC),
           unselectedItemColor: Colors.grey,
-          currentIndex: 2, // Indeks Profile Aktif
+          currentIndex: 2, 
           onTap: (index) {
             if (index == 0) context.push('/');
             if (index == 1) context.push('/bookmark');
@@ -261,7 +272,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Helper Widget untuk membuat Card Informasi
   Widget _buildInfoCard({
     required String title,
     required String value,
