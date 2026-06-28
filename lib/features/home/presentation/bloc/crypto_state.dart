@@ -8,23 +8,30 @@ abstract class CryptoState extends Equatable {
   List<Object?> get props => [];
 }
 
-// 1. Status Awal
+// 1. Status Awal saat aplikasi baru dibuka
 class CryptoInitial extends CryptoState {}
 
-// 2. Status Loading Spinner (Saat Request API/Database)
+// 2. Status Loading pertama kali (Layar penuh spinner)
 class CryptoLoading extends CryptoState {}
 
-// 3. Status Tampilan Data Sukses
+// 3. Status Berhasil memuat data & mengelola bookmark
 class CryptoSuccess extends CryptoState {
   final List<CryptoApiModel> cryptoList;
+  final List<CryptoApiModel> bookmarkedList;
 
-  const CryptoSuccess(this.cryptoList);
+  const CryptoSuccess({
+    required this.cryptoList,
+    required this.bookmarkedList,
+  });
 
   @override
-  List<Object?> get props => [cryptoList];
+  List<Object?> get props => [
+        cryptoList,
+        bookmarkedList,
+      ];
 }
 
-// 4. Status Pesan Merah / Gagal (Fail-Safe UI)
+// 4. Status Gagal / Error
 class CryptoFailure extends CryptoState {
   final String errorMessage;
 
