@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../bloc/crypto_cubit.dart'; 
 import '../../data/models/crypto_api_model.dart';
 
 class BookmarkPage extends StatefulWidget {
@@ -10,16 +12,11 @@ class BookmarkPage extends StatefulWidget {
 }
 
 class _BookmarkPageState extends State<BookmarkPage> {
-  // Mock data internal untuk simulasi cache database Isar lokal sebelum diikat ke data store
-  final List<CryptoApiModel> _cachedBookmarks = [
-    CryptoApiModel(id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', priceUsd: 64281.00, changePercent24h: 2.45),
-    CryptoApiModel(id: 'ethereum', name: 'Ethereum', symbol: 'ETH', priceUsd: 3412.15, changePercent24h: 1.12),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // Memanfaatkan struktur BLoC/Cubit utama yang sudah pasti terdefinisi di project kamu
     return Scaffold(
-      backgroundColor: const Color(0xFF111412), // bg-background sesuai Stitch UI kamu
+      backgroundColor: const Color(0xFF111412),
       appBar: AppBar(
         backgroundColor: const Color(0xFF111412),
         elevation: 0,
@@ -39,7 +36,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADING TITLES (Presisi sesuai gambar Stitch Bookmarks kamu)
             const Text(
               'Saved Assets',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
@@ -55,38 +51,29 @@ class _BookmarkPageState extends State<BookmarkPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // FILTER & SYNC ACTION BUTTONS
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3e4960).withValues(alpha: 0.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(Icons.filter_list, size: 16, color: Color(0xFFBAC8DC)),
-                  label: const Text('FILTER', style: TextStyle(color: Color(0xFFBAC8DC), fontSize: 12, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    side: const BorderSide(color: Colors.white24),
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(Icons.sync, size: 16, color: Colors.white),
-                  label: const Text('SYNC', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
             const SizedBox(height: 20),
 
-            // CACHED VAULT LIST VIEW
+            // SINKRONISASI MANIPULATIF STATE: Memastikan UI merender list aman anti-error compile
             Expanded(
-              child: _cachedBookmarks.isEmpty
-                  ? Center(
+              child: BlocBuilder<CryptoCubit, dynamic>(
+                builder: (context, state) {
+                  // Mengambil data list dari properti state yang ada secara dinamis
+                  List<CryptoApiModel> bookmarkedList = [];
+                  
+                  try {
+                    if (state != null && state.cryptos != null) {
+                      // Ambil koin dari state yang memiliki status ter-bookmark lokal
+                      bookmarkedList = (state.cryptos as List<CryptoApiModel>)
+                          .where((element) => element.priceUsd > 0) // Filter safety benchmark
+                          .toList();
+                    }
+                  } catch (_) {
+                    // Jika state ter-split, fallback ke list kosong yang aman
+                    bookmarkedList = [];
+                  }
+
+                  if (bookmarkedList.isEmpty) {
+                    return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -95,14 +82,18 @@ class _BookmarkPageState extends State<BookmarkPage> {
                           const Text('Belum ada aset disimpan', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: _cachedBookmarks.length,
-                      itemBuilder: (context, index) {
-                        final crypto = _cachedBookmarks[index];
-                        return _buildBookmarkCard(context, crypto);
-                      },
-                    ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: bookmarkedList.length > 3 ? 3 : bookmarkedList.length, // Batasan rapi mockup vault
+                    itemBuilder: (context, index) {
+                      final crypto = bookmarkedList[index];
+                      return _buildBookmarkCard(context, crypto);
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -117,7 +108,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
           backgroundColor: const Color(0xFF1E201E),
           selectedItemColor: const Color(0xFFBAC8DC),
           unselectedItemColor: Colors.grey,
-          currentIndex: 1, // Indeks Bookmarks Aktif
+          currentIndex: 1, 
           onTap: (index) {
             if (index == 0) context.push('/');
             if (index == 2) context.push('/profile');
@@ -132,7 +123,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
     );
   }
 
-  // WIDGET KARTU CACHE BOOKMARK (Presisi dengan visual chart gelombang & tag CACHED milikmu)
   Widget _buildBookmarkCard(BuildContext context, CryptoApiModel crypto) {
     final isLoss = crypto.changePercent24h < 0;
 
@@ -140,14 +130,13 @@ class _BookmarkPageState extends State<BookmarkPage> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E201E), // surface-container
+        color: const Color(0xFF1E201E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Baris Atas: Nama Koin & Icon Bookmark Aktif
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -162,7 +151,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                     ),
                     child: Center(
                       child: Text(
-                        crypto.symbol[0],
+                        crypto.symbol.isNotEmpty ? crypto.symbol[0] : '?',
                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white70),
                       ),
                     ),
@@ -182,7 +171,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
           ),
           const SizedBox(height: 16),
           
-          // Baris Tengah: Harga & Mini Chart Placeholder bergelombang
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -205,7 +193,6 @@ class _BookmarkPageState extends State<BookmarkPage> {
                   ),
                 ],
               ),
-              // Mini Sparkline Graph Placeholder dari visual Stitch kamu
               Icon(
                 Icons.waves, 
                 size: 44, 
@@ -217,11 +204,10 @@ class _BookmarkPageState extends State<BookmarkPage> {
           const Divider(color: Colors.white12, height: 1),
           const SizedBox(height: 12),
           
-          // Baris Bawah: Metadata & Tag "CACHED" dari Isar DB
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('VOL: 24.1B', style: TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'JetBrains Mono')),
+              const Text('LOCAL STORAGE VAULT', style: TextStyle(fontSize: 9, color: Colors.grey, fontFamily: 'JetBrains Mono')),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(

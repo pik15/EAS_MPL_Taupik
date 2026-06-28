@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:fl_chart/fl_chart.dart'; // Library untuk grafik berjalan dinamis
+import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/network/native_service.dart';
 import '../../data/models/crypto_api_model.dart';
 
@@ -21,7 +21,8 @@ class _DetailPageState extends State<DetailPage> {
     setState(() {
       _isBookmarked = !_isBookmarked;
     });
-    // Efek visual SnackBar sebagai pelengkap UX
+
+    // Efek visual SnackBar sebagai pelengkap UX simulasi penyimpanan lokal Isar DB
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -58,7 +59,7 @@ class _DetailPageState extends State<DetailPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // FIX: Mengunci ukuran box agar Lottie mendapatkan space render instan sejak frame pertama
+              // Mengunci ukuran box agar Lottie mendapatkan space render instan sejak frame pertama
               SizedBox(
                 width: 180,
                 height: 180,
@@ -171,7 +172,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
             const SizedBox(height: 20),
 
-            // UPDATE: LIVE CHART DENGAN FL_CHART (GRAFIK BERJALAN DINAMIS)
+            // LIVE CHART DENGAN FL_CHART (GRAFIK BERJALAN DINAMIS)
             Container(
               height: 200,
               width: double.infinity,
